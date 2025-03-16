@@ -1,20 +1,20 @@
 #include "defs.h"
 
 void  clearScreen(){
-  printf("\033[H\033[J");
+  printf("\033[H\033[J"); //ascii escape sequence that clears the screen
 }
 
 
 void displayPet(struct BattlePet d){
     char cChoice;
     printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf("Name:\t\t%s\n", d.name);
-    printf("Element:\t\t%s\n", d.element);
+    printf("Name:\t\t\t%-30s\n", d.name);
+    printf("Element:\t\t%-10s\n", d.element);
     printf("Matches:\t\t%d\n", d.match_count);
     printf("%s\n", d.description);
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf("Press any letter to go back to go back");
-    scanf("%d", cChoice);
+    printf("Press any letter to go back to: ");
+    scanf(" %c", &cChoice);
 }
 
 
@@ -24,11 +24,12 @@ void View(struct BattlePet pets[]){
   char choice;
   int page = 1;
   while(exitCondition){
+
     clearScreen();
     printf("Pet Names: \n");
     for(int i = 0; i < PAGE_SIZE; i++){
       if(index + i < 60){
-        printf("%d]\t\t%s\t\t[%c]\n", i + 1, pets[index + i].name, pets[index + i].element[0]);
+        printf("%d]\t\t%-30s\t\t[%c]\n", i + 1, pets[index + i].name, pets[index + i].element[0]);
       }
     }
   
@@ -48,10 +49,10 @@ void View(struct BattlePet pets[]){
         } 
         else if(choice == 's'){
           int nChoice;
-          printf("\nType the number of the Pet that you wish to know more of");
+          printf("\nType the number of the Pet that you wish to know more of: ");
           scanf("%d", &nChoice);
-          displayPet(pets[index + (nChoice-1)]);
-        }
+          displayPet(pets[index + (nChoice-1)]); 
+    }
         else{
             printf("Invalid option or no more pages available!\n");
         }
@@ -63,6 +64,7 @@ void ComPetDium(){
   struct BattlePet pets[MAX_PETS];
   for(int i = 0; i < MAX_PETS; i++){
     strcpy(pets[i].name, "EMPTY-SLOT");
+    strcpy(pets[i].element, "\0");
   }
   //initializing pet array
   loadBattlePetsFromFile(pets); //loading pet array
@@ -125,7 +127,8 @@ int displayMainMenu()
 void loadBattlePetsFromFile(struct BattlePet pets[]) 
 {
   printf("\ninitating file....\n");
-    FILE *file = fopen("../pets.txt", "r"); //our file pointer variable carrying the address of our pet file, in read mode 
+  clearScreen();
+    FILE *file = fopen("../competdium.txt", "r"); //our file pointer variable carrying the address of our pet file, in read mode 
     
     if (file == NULL) {  //file opening error handling
         printf("Error opening file.\n");
@@ -134,9 +137,10 @@ void loadBattlePetsFromFile(struct BattlePet pets[])
     else{
       int i = 0;
       printf("\nLoading file into program...\nfile succesfully opened");
+      clearScreen();
       while (i < MAX_PETS && fscanf(file, "%s", pets[i].name) == 1) {
         // Read the element (affinity)
-        fscanf(file, " %s", &pets[i].element);  // Space skips any leading whitespace/newlines
+        fscanf(file, " %s", pets[i].element);  // Space skips any leading whitespace/newlines
         
         // Read the description (up to the newline character)
         fscanf(file, " %[^\n]", pets[i].description);  // This will read everything up to a newline
