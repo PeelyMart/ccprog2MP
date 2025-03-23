@@ -1,0 +1,42 @@
+
+🛠 Solo Dev Git Workflow (Feature Addition & Backup)
+1️⃣ Start from the Stable Branch
+Ensure you're on main (or your stable branch).
+Pull the latest changes:
+git checkout main
+git pull origin main
+
+2️⃣ Create a Feature Branch
+Create and switch to a new branch for the feature:
+git checkout -b feature-new-feature-name
+
+3️⃣ Develop & Commit Changes
+Make your changes and save them.
+Add and commit them:
+git add .
+git commit -m "Add: [brief description of feature]"
+
+
+4️⃣ Push to GitHub (Backup)
+Push your feature branch to GitHub:
+git push origin feature-new-feature-name
+✅ Now your work is backed up.
+
+
+5️⃣ Merge Back to main (Once Done)
+Switch back to main:
+
+git checkout main
+
+Merge the feature branch:
+
+git merge feature-new-feature-name
+Push the updated main to GitHub:
+git push origin main
+
+
+6️⃣ Cleanup Unused Branches
+Delete the feature branch locally:
+git branch -d feature-new-feature-name
+Delete it on GitHub (remote):
+git push origin --delete feature-new-feature-name
