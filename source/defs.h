@@ -2,6 +2,10 @@
   This is the header file, intended for the defninition of the structs and commonly
   used values
 */
+#ifndef DEFS_H
+#define DEFS_H 
+
+
 //---------------common variables-------------//
 #include <string.h>
 #include <stdio.h>
@@ -50,3 +54,5 @@ void clearScreen();
 int delete(struct BattlePet d[], int index);
 int save(struct BattlePet pets[]);
 int backupBattlePets(struct BattlePet pets[]);
+
+#endif
