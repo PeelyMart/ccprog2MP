@@ -1,10 +1,15 @@
+Solaraffe
+Fire
+A fiery and Majestic giraffe that harnesses the power of the sun
+0
+
 Firepupp
 Fire
 A loyal, flame-breathing dog that races through the night with fiery speed.
 0
 
 Hydrake
-Water
+Earth
 A sleek, serpentine creature that can summon powerful waves and whip through currents with ease.
 0
 
@@ -71,8 +76,5 @@ A massive elephant with skin as tough as steel, capable of trampling through any
 Rustcoon
 Metal
 A clever raccoon with metallic fur that can withstand rust and corrosion, scavenging through abandoned factories.
-0
-
- that can withstand rust and corrosion, scavenging through abandoned factories.
 0
 
