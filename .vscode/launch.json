@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/martinantolihao/Documents/CCPROG2/machineProject/source",
+      "program": "/Users/martinantolihao/Documents/CCPROG2/machineProject/source/build/Debug/outDebug"
+    }
+  ]
+}
