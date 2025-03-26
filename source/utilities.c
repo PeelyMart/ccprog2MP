@@ -1,5 +1,130 @@
 #include "defs.h"
 #include <unistd.h>
+#include <string.h>
+/*
+ *
+*/
+void addPet(struct BattlePet d[]){
+  int index = getLastPet(d);
+  int loop = 1; 
+  int nChoice;
+  char inputBuffer[500]; //buffer makes sure that we can check it before officially copying it over to the array.
+  BattlePetName nameBuffer;
+  BPDescription descriptionBuffer;
+  int elementChoice;
+  while(loop){
+  printf("Name Here: \n");
+  scanf("%s", inputBuffer);
+  if(strlen(inputBuffer) > 30){
+      printf("\n This is OVER the limit please try again");
+    }
+  else if(strlen(inputBuffer) <= 30){
+    loop = 0;
+  }
+  }
+  strcpy(nameBuffer, inputBuffer);
+  loop = 1;
+  while(loop){
+    printf("Description Here: \n");
+    scanf("%s", inputBuffer);
+    if(strlen(inputBuffer) > 240){
+        printf("\n This is OVER the limit please try again");
+      }
+    else if(strlen(inputBuffer) <= 240){
+      loop = 0;
+    }
+    }
+    strcpy(descriptionBuffer, inputBuffer);
+    loop = 1; 
+    while(loop){
+      elementDisplay();
+      printf("Element Here: \n");
+      scanf(" %d", &elementChoice);
+      loop = integerToElement(d[index].element, elementChoice);
+      }
+    strcpy(d[index].name, nameBuffer);
+    strcpy(d[index].description, descriptionBuffer);
+    d[index].match_count = 0;
+    save(d);
+    printf("write successful");
+}
+
+/* Finds the index of the last pet of the array
+ * @param *d contains all the pets in the game
+ * @returns the last index of the pet
+*/
+int getLastPet(struct BattlePet d[]){
+  int j = 0;
+  while(strcmp(d[j].name, "EMPTY-SLOT") != 0){
+    if(j == 60){
+      return 60;
+    }
+    j++;
+   
+  }
+  return j;
+}
+
+/* This function edits the name of the specified battle pet
+ * @param *d this contains all the pets in the game
+ * @param index this specifies what pet in the array
+*/
+void nameEdit(struct BattlePet d[], int index){
+  displayPet(d[index]);
+  int loop1 = 1; 
+  int nChoice;
+  char inputBuffer[500]; //buffer makes sure that we can check it before officially copying it over to the array.
+  while(loop1){
+  printf("This is your current name: \n%s\n", d[index].name);
+  printf("YOUR NEW NAME MUST NOT BE LONGER THAN 30 characters and not contain any NEWLINE CHARACTERS: \n");
+  printf("Type Here: \n");
+  scanf("%s", inputBuffer);
+  if(strlen(inputBuffer) > 30){
+      printf("\n This is OVER the limit please try again");
+    }
+  else if(strlen(inputBuffer) <= 30){
+            backupBattlePets(d);
+            strcpy(d[index].name, inputBuffer);
+            save(d);
+            loop1 = 0;
+            printf("save completed\n");
+        }
+  else{
+      printf("Error");
+  }
+  }
+}
+
+/* This function edits the description of the specified battle pet
+ * @param *d this contains all the pets in the game
+ * @param index this specifies what pet in the array
+*/
+void descriptionEdit(struct BattlePet d[], int index){
+  displayPet(d[index]);
+  int loop1 = 1;
+  int loop2 = 1; 
+  int nChoice;
+  char inputBuffer[500]; //buffer makes sure that we can check it before officially copying it over to the array.
+  while(loop1){
+  printf("This is your current description: \n%s\n", d[index].description);
+  printf("YOUR NEW DESCRIPTION MUST NOT BE LONGER THAN 240 characters and not contain any NEWLINE CHARACTERS: \n");
+  printf("Type Here: \n");
+  scanf(" %[^\n]", inputBuffer);  // The space before % ensures any leading whitespace is ignored
+  if(strlen(inputBuffer) > 240){
+      printf("\n This is OVER the limit please try again");
+    }
+  else if(strlen(inputBuffer) <= 240){
+            backupBattlePets(d);
+            strcpy(d[index].description, inputBuffer);
+            save(d);
+            loop1 = 0;
+            printf("save completed\n");
+        }
+  else{
+      printf("Error");
+  }
+  }
+}
 
 /* 
  * This function will intake an integer oputput, which will then give an output of what element it is in
@@ -9,7 +134,6 @@
  * @return 0 if write was successful
  * @return 1 if write was unsuccessful
 */
-
 int integerToElement(char* output, int input)
 {
   switch(input){
@@ -51,8 +175,11 @@ int integerToElement(char* output, int input)
   }
 }
 
-/*
- *
+/* This function edits the battlepets element. It accepts the input of the user, takes account of what the user
+ * wants to change it to
+ * @param *SSd is the struct array of all pets
+ * @param index is the specific index of the pet that you want to change it to
+ * @pre the pet is in the array, and the index is less that 50SS
  */
 void elementEdit(struct BattlePet d[], int index){
   int loop = 1;
@@ -76,10 +203,6 @@ void elementEdit(struct BattlePet d[], int index){
   save(d);
 }
 
-
-
-
-
 /*Prints an ASCII value that clears the screen
  */
 void  clearScreen(){
@@ -94,8 +217,9 @@ void  clearScreen(){
  * @return 1 if there was a failure in saving
  *
 */
-int save(struct BattlePet pets[]){
-  int j = 0 ;
+int save(struct BattlePet pets[])
+{
+  int j = getLastPet(pets);
   while(strcmp(pets[j].name, "EMPTY-SLOT") != 0){
     j++;
   }
@@ -125,11 +249,9 @@ int save(struct BattlePet pets[]){
  * @returns 1 if there was an error
  *
 */
-int backupBattlePets(struct BattlePet pets[]){
-  int j = 0 ;
-  while(strcmp(pets[j].name, "EMPTY-SLOT") != 0){ //this returns a j, 
-    j++;                                          //where j = to the last pet of the array     
-  }
+int backupBattlePets(struct BattlePet pets[])
+{
+  int j = getLastPet(pets);
   FILE *file = fopen("../backupPets.txt", "w");
   if (file == NULL){
     printf("Error opening file\n");
@@ -174,7 +296,6 @@ int delete(struct BattlePet d[], int index)
       for(i = index; i < MAX_PETS-1; i++){
         d[i] = d[i+1];
       }
-      save(d);
     }
     else{
       printf("\nSorry, there was an error in saving a backup\n changes cannot be applied\n");

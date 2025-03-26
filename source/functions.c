@@ -2,6 +2,8 @@
 #include "utilities.c"
 #include <unistd.h>
 
+
+
 /* Displays all the elements and their respective numerical equivalent
  */
 void elementDisplay(){
@@ -37,7 +39,7 @@ void edit(struct BattlePet d[], int index){
     clearScreen();
     printf("\t\t\tEDIT MODE:");
     displayPet(d[index]);
-    printf("What do you want to edit?: \n[0] - Go back \n[1] - Element \n[2] - Description\n [3] Name" );
+    printf("What do you want to edit?: \n[0] - Go back \n[1] - Element \n[2] - Description\n[3] - Name" );
     scanf("%d", &nChoice);
     switch(nChoice){
       case 0: 
@@ -47,13 +49,13 @@ void edit(struct BattlePet d[], int index){
         elementEdit(d, index);
         break;
       case 2:
-        //descriptionEdit(d);
+        descriptionEdit(d, index);
         break;
       case 3: 
-        //nameEdit();
-        
+        nameEdit(d, index);
+        break; 
       default:
-        
+        printf("That is not a valid input");  
     }
  
   }
@@ -84,7 +86,7 @@ void ComPetDiumDriver()
 /* 
  * This function displays the full information of the pet 
  * and offers more options to do with such pet 
- * @param d[] is the array of all pets
+ * @param d is the array of all pets
  * @param index is the specific index that is being viewed
 */
 void fullInfo(struct BattlePet d[], int index)
@@ -94,7 +96,7 @@ void fullInfo(struct BattlePet d[], int index)
     int deleteState;
   while(loop){
     displayPet(d[index]);
-   printf("Press: \n[0] - Go back \n[1] - Edit \n[2] - Delete\n" );
+   printf("Press: \n[0] - Go back \n[1] - Edit \n[2] - Delete \n" );
     scanf("%d", &nChoice);
     if(nChoice >= 0 && nChoice <= 2){
       switch(nChoice){
@@ -125,7 +127,9 @@ void fullInfo(struct BattlePet d[], int index)
           loop = 0;
           break;
         default:
-      }
+            printf("Ivalid input");
+            break;
+        }
       }
     }
 }
@@ -134,7 +138,6 @@ void fullInfo(struct BattlePet d[], int index)
 /* This function displays the pets name already, allows user to see more information by pressing 's'
  * in the s function, they can delete and view the file.
  */
-
 void View(struct BattlePet pets[])
 {
   int exitCondition = 1; //loop variable
@@ -143,7 +146,7 @@ void View(struct BattlePet pets[])
   int page = 1;
   while(exitCondition){
     clearScreen();
-    printf("Pet Names: \n");
+    printf("Amount of Pets: %d\n", getLastPet(pets));
     for(int i = 0; i < PAGE_SIZE; i++){
       if(index + i < 60){
         printf("%d]\t\t%-30s\t\t[%c]\n", i + 1, pets[index + i].name, pets[index + i].element[0]);
@@ -152,7 +155,7 @@ void View(struct BattlePet pets[])
   
     printf("Page: %d", page);
     printf("\n");
-    printf("Enter: \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [s] for info and edit options: ");
+    printf("Enter: \n [a] - add pet \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [s] for info and edit options: ");
     scanf(" %c", &choice);  // Space before %c to clear buffer
         if (choice == 'n' && index + PAGE_SIZE < MAX_PETS) {
             index += PAGE_SIZE;  // Move to next page
@@ -163,7 +166,10 @@ void View(struct BattlePet pets[])
         } 
         else if (choice == 'q') {
             exitCondition = 0;  // Exit the loop
-        } 
+        }
+        else if(choice == 'a'){
+          addPet(pets);
+        }
         else if(choice == 's'){
           int nChoice;
           int loop = 1; 
@@ -203,7 +209,7 @@ int displayMainMenu()
 
     switch(mainChoice){
       case 1: //battle case
-        printf("battle selected\n");
+        battleDriver();
         break;
       case 2://ComPetDium
         ComPetDiumDriver();
