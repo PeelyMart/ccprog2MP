@@ -5,13 +5,15 @@
 
 
 
-void rosterScreen(struct BattlePet[]){
+void rosterScreen(struct BattlePet d[], int roster[], int player){
   int nChoice;
+  printf("Player %d\n", player);
   printf("[1] - Create Roster\n");
   printf("[2] - Load Roster\n");
   switch(nChoice){
     case 1:
-    
+      rosterSelect(d, roster);
+      break;
     case 2:
     default:
   }
@@ -69,88 +71,100 @@ void addPlayer(struct PlayerInfo p[], int addIndex)
  * @return the structure of the selected player
  *
 */
-struct PlayerInfo playerView(struct PlayerInfo p[], int* saveindex, int compare)
-{
-  int exitCondition;
-  int page = 1;
-  int index = 0;
-  int nChoice = 1;
-  int loop = 1;
-  
-  char choice;
-  while(exitCondition){
-    clearScreen();
-    if(compare == 9999){
-      printf("PLAYER ONE\n");
-    }
-    else{
-      printf("PLAYER TWO\n");
-    }
-    printf("Players: \n");
-    for(int i = 0; i < PAGE_SIZE; i++){
-      if(index + i < 60){
-        printf("%d]\t\t%-30s\t\t\n", i + 1, p[index + i].name);
-      }
-    }
-    printf("Page: %d", page);
-    printf("\n");
-    printf("Enter: \n [a] - add player [n] - Next page [p] - Previous page [q] to Quit [s] select mode ");
-    scanf(" %c", &choice);  // Space before %c to clear buffer
+struct PlayerInfo playerView(struct PlayerInfo p[], int* saveindex, int compare) {
+    int exitCondition = 1;
+    int page = 1;
+    int index = 0;
+    int nChoice = 1;
+    int loop = 1;
+    
+    char choice;
+    while (exitCondition) {
+        clearScreen();
+        if (compare == 9999) {
+            printf("PLAYER ONE\n");
+        } else {
+            printf("PLAYER TWO\n");
+        }
+        printf("Players: \n");
+        for (int i = 0; i < PAGE_SIZE; i++) {
+            if (index + i < MAX_PETS && p[index + i].name[0] != '\0') {
+                printf("%d]\t\t%-30s\t\t\n", i + 1, p[index + i].name);
+            }
+        }
+        printf("Page: %d\n", page);
+        printf("Enter: \n [a] - add player [n] - Next page [p] - Previous page [q] to Quit [s] select mode\n");
+        scanf(" %c", &choice);  // Space before %c to clear buffer
+
+        // Clear the input buffer to avoid issues with leftover characters
+        while (getchar() != '\n');  // This will discard any remaining characters in the input buffer
+
         if (choice == 'n' && index + PAGE_SIZE < MAX_PETS) {
             index += PAGE_SIZE;  // Move to next page
             page++;
         } else if (choice == 'p' && index - PAGE_SIZE >= 0) {
             index -= PAGE_SIZE;  // Move to previous page
             page--;
-        } 
+        } else if (choice == 's') {
+            while (loop) {
+                printf("From [1] - [4] select the player: ");
+                scanf(" %d", &nChoice);
+
+                // Clear the input buffer again
+                while (getchar() != '\n'); // Clear the input buffer to avoid leftover characters
+
+                if (nChoice >= 1 && nChoice <= 4) {
+                    if (index + (nChoice - 1) != compare) {
+                        *saveindex = index + (nChoice - 1);
+                        loop = 0; // Exit the loop after a valid selection
+                        return p[index + (nChoice - 1)];
+                    } else {
+                        printf("You cannot pick the same player\n");
+                    }
+                } else {
+                    printf("Invalid input or you cannot select the same player\n");
+                }
+            savePlayer(p);
+            }
+        } else if (choice == 'a') {
+            int addIndex = getLastPlayer(p);
+            addPlayer(p, addIndex);
+        }
         else if (choice == 'q') {
-            exitCondition = 0;  // Exit the loop
-        }
-        else if(choice == 's'){
-        while(loop){
-          printf("From [1] - [4] select the pet that you wish to see the information for");
-          printf("\nHere: ");
-          scanf(" %d", &nChoice);
-          if(nChoice >=1 && nChoice <= 4){
-              if(index + (nChoice - 1) != compare){
-                *saveindex = index + (nChoice - 1);
-                return p[index + (nChoice - 1)];
-                loop = 0;
-              }
-                else{
-              printf("you cannot pick the same player");
-              }
-            }
-            else{
-              printf("invalid input/you can not select the same player");
-            }
-          }
-        }
-        else if(choice == 'a'){
-        int addIndex = getLastPlayer(p);
-        addPlayer(p, addIndex);
-        
-
-      }
-
+            exitCondition = 0;  // Set exit condition to 0 and exit the loop
+        } 
     }
-  }
+    struct PlayerInfo empty = {0};  // Empty player to return in case of failure
+    return empty;
+}
+
+
+
+
 /* Governs the flow the the Battle game proper
  * @param d is the arrays of all pets
  * @param p is the array of all players 
 */
 void battleMain(struct BattlePet d[], struct PlayerInfo p[]){
   struct PlayerInfo one;
-  struct BattlePet rosterOne[9];
+  int rosterOne[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1,};
   int oneindex;
   struct PlayerInfo two;
-  struct BattlePet rosterTwo[9];
+  int rosterTwo[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1,};
   int twoindex;
+  int count = 0;
   one = playerView(p, &oneindex, 9999);
   two = playerView(p, &twoindex, oneindex);
-  printf("Player one: %s\n", one.name);
-  printf("Player Two: %s\n", two.name);
-  fflush(stdout);
+  rosterScreen(d, rosterOne, 1);
+  rosterScreen(d, rosterTwo, 2);
+  for(int x = 0; x < 3; x++){
+    for(int y = 0; y < 3; y++){
+      printf("[%d][%d] %s vs %s\n", x, y, d[rosterOne[count]].name, d[rosterTwo[count]].name);
+      fflush(stdout);
+      count++;
+    }
+  }
+  sleep(10);
 
   
 }

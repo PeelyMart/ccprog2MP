@@ -2,24 +2,47 @@
 #include <unistd.h>
 #include <string.h>
 
+
+
+/* Checks the roster indexes if it is alredy picked
+ * @param n - the array to be checked against
+ * @return 1 if it is already picked
+ * @return 0 if it is not picked
+ */
+int rosterSelectChecker(int n[], int key){
+  for(int i = 0; i < 9; i++){
+    if(key == n[i]){
+      return 1;
+    }
+  }
+  return 0;
+}
+
+
 /* This is the roster selection screen where you can pick your roster
  * @param d is the array of all the pets in the competdium
  * @param r is the roster array of each player
  */
 
-void rosterSelect(struct BattlePet d[], struct BattlePet r[]){
-  int alreadyPicked[9] = {-1, -1, -1, -1, -1, -1, -1, -1}; //stores the index of "already picked pets"
+void rosterSelect(struct BattlePet d[], int roster[]){
+  int alreadyPicked[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1}; //stores the index of "already picked pets"
   int petChoice;
+  int exitCondition = 1;
+  int index = 0;
+  int page = 1;
+  char choice;
+  int count = 0;
   while(exitCondition){
     clearScreen();
-    printf("Amount of Pets: %d\n", getLastPet(pets));
+    printf("Amount of Pets: %d\n", getLastPet(d));
     for(int i = 0; i < PAGE_SIZE; i++){
       if(index + i < 60){
         printf("%d]\t\t%-30s\t\t[%c]\n", i + 1, d[index + i].name, d[index + i].element[0]);
       }
     }
   
-    printf("Page: %d", page);
+    printf("Page: %d \t", page);
+    printf("Count:%d", count );
     printf("\n");
     printf("Enter: \n [a] - add pet \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [s] for info and edit options: ");
     scanf(" %c", &choice);  // Space before %c to clear buffer
@@ -33,18 +56,41 @@ void rosterSelect(struct BattlePet d[], struct BattlePet r[]){
         else if (choice == 'q') {
             exitCondition = 0;  // Exit the loop
         }
-        else if(choice == 'a'){
-          printf("Pick from [1] - [4] to add");
-
-        }
-        else {
-            printf("Invalid input\n");
+        else if(choice == 'a')
+        {
+          if(count == 9){
+            printf("your roster is already full you have to press c");
+            fflush(stdout);
+            sleep(2);
           }
-      }
-    }
-        else{
-            printf("Invalid option or no more pages available!\n");
+          else{
+            int loop = 1;
+            while(loop){
+              printf("Pick from [1] - [4] to add\n");
+              scanf("%d", &petChoice);
+              int adjusted = index + (petChoice - 1);
+              if(rosterSelectChecker(alreadyPicked, adjusted) == 1){
+              printf("It is already picked");
+              fflush(stdout);
+              }
+              else{
+              alreadyPicked[count] = adjusted;
+              roster[count] = adjusted;
+              count++;
+              loop = 0;
+            }
+            }
+          }
         }
+        else if(choice == 'c'){
+          for(int i = 0; i < 9; i++){
+            printf("%s\n", d[roster[i]].name);
+            fflush(stdout);
+          }
+          sleep(5);
+          exitCondition = 0;
+          }
+          
 
   }
 

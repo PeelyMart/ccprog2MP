@@ -69,4 +69,6 @@ int loadPlayerFromFile(struct PlayerInfo p[]);
 struct PlayerInfo playerView(struct PlayerInfo p[], int* saveindex, int compare);
 int getLastPlayer(struct PlayerInfo d[]);
 int savePlayer(struct PlayerInfo p[]);
+void rosterSelect(struct BattlePet d[], int roster[]);
+int rosterSelectChecker(int n[], int key);
 #endif
