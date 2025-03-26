@@ -1,10 +1,86 @@
 #include "defs.h"
 #include <unistd.h>
 #include <string.h>
+
+/* This is the roster selection screen where you can pick your roster
+ * @param d is the array of all the pets in the competdium
+ * @param r is the roster array of each player
+ */
+
+void rosterSelect(struct BattlePet d[], struct BattlePet r[]){
+  int alreadyPicked[9] = {-1, -1, -1, -1, -1, -1, -1, -1}; //stores the index of "already picked pets"
+  int petChoice;
+  while(exitCondition){
+    clearScreen();
+    printf("Amount of Pets: %d\n", getLastPet(pets));
+    for(int i = 0; i < PAGE_SIZE; i++){
+      if(index + i < 60){
+        printf("%d]\t\t%-30s\t\t[%c]\n", i + 1, d[index + i].name, d[index + i].element[0]);
+      }
+    }
+  
+    printf("Page: %d", page);
+    printf("\n");
+    printf("Enter: \n [a] - add pet \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [s] for info and edit options: ");
+    scanf(" %c", &choice);  // Space before %c to clear buffer
+        if (choice == 'n' && index + PAGE_SIZE < MAX_PETS) {
+            index += PAGE_SIZE;  // Move to next page
+            page++;
+        } else if (choice == 'p' && index - PAGE_SIZE >= 0) {
+            index -= PAGE_SIZE;  // Move to previous page
+            page--;
+        } 
+        else if (choice == 'q') {
+            exitCondition = 0;  // Exit the loop
+        }
+        else if(choice == 'a'){
+          printf("Pick from [1] - [4] to add");
+
+        }
+        else {
+            printf("Invalid input\n");
+          }
+      }
+    }
+        else{
+            printf("Invalid option or no more pages available!\n");
+        }
+
+  }
+
+}
+
+
+
+
+int savePlayer(struct PlayerInfo p[])
+{
+  int j = getLastPlayer(p);
+  FILE *file = fopen("players.txt", "w");
+  if (file == NULL){
+    printf("Error opening file\n");
+    return 1;
+  }
+  else{
+    for(int i = 0; i < j; i++){
+      fprintf(file, "%s\n", p[i].name);
+      fprintf(file, "%d\n", p[i].win);
+      fprintf(file, "%d\n", p[i].loss);
+      fprintf(file, "%d\n", p[i].draw);
+      fprintf(file, "\n");
+    }
+    printf("Back up completed");
+    return 0;
+  }
+  fclose(file);
+}
+
+
 /*
  *
 */
-void addPet(struct BattlePet d[]){
+void addPet(struct BattlePet d[])
+{
   int index = getLastPet(d);
   int loop = 1; 
   int nChoice;
@@ -45,8 +121,25 @@ void addPet(struct BattlePet d[]){
     strcpy(d[index].name, nameBuffer);
     strcpy(d[index].description, descriptionBuffer);
     d[index].match_count = 0;
-    save(d);
+    savePet(d);
     printf("write successful");
+}
+
+/* Finds the index of the last player of the array
+ * @param *d contains all the players in the game
+ * @returns the last index of the player 
+*/
+
+int getLastPlayer(struct PlayerInfo d[]){
+  int j = 0;
+  while(strcmp(d[j].name, "EMPTY-SLOT") != 0){
+    if(j == 50){
+      return 50;
+    }
+    j++;
+   
+  }
+  return j;
 }
 
 /* Finds the index of the last pet of the array
@@ -85,7 +178,7 @@ void nameEdit(struct BattlePet d[], int index){
   else if(strlen(inputBuffer) <= 30){
             backupBattlePets(d);
             strcpy(d[index].name, inputBuffer);
-            save(d);
+            savePet(d);
             loop1 = 0;
             printf("save completed\n");
         }
@@ -116,7 +209,7 @@ void descriptionEdit(struct BattlePet d[], int index){
   else if(strlen(inputBuffer) <= 240){
             backupBattlePets(d);
             strcpy(d[index].description, inputBuffer);
-            save(d);
+            savePet(d);
             loop1 = 0;
             printf("save completed\n");
         }
@@ -200,7 +293,7 @@ void elementEdit(struct BattlePet d[], int index){
   printf("This is your new pet");
   displayPet(d[index]);
   sleep(2);
-  save(d);
+  savePet(d);
 }
 
 /*Prints an ASCII value that clears the screen
@@ -217,13 +310,10 @@ void  clearScreen(){
  * @return 1 if there was a failure in saving
  *
 */
-int save(struct BattlePet pets[])
+int savePet(struct BattlePet pets[])
 {
   int j = getLastPet(pets);
-  while(strcmp(pets[j].name, "EMPTY-SLOT") != 0){
-    j++;
-  }
-  FILE *file = fopen("../competdium.txt", "w");
+  FILE *file = fopen("competdium.txt", "w");
   if (file == NULL){
     printf("Error opening file\n");
     return 1;
@@ -252,7 +342,7 @@ int save(struct BattlePet pets[])
 int backupBattlePets(struct BattlePet pets[])
 {
   int j = getLastPet(pets);
-  FILE *file = fopen("../backupPets.txt", "w");
+  FILE *file = fopen("backupPets.txt", "w");
   if (file == NULL){
     printf("Error opening file\n");
     return 1;
@@ -308,6 +398,34 @@ int delete(struct BattlePet d[], int index)
   }
 }
 
+int loadPlayerFromFile(struct PlayerInfo p[]){
+   printf("\ninitating file....\n");
+  sleep(1); //allows previous messages to be seen before clear screen operations
+  clearScreen();
+    FILE *file = fopen("players.txt", "r"); //our file pointer variable carrying the address of our pet file, in read mode 
+    if (file == NULL) 
+    {  //file opening error handling
+        printf("Error opening file.\n"); 
+        return 1;
+    }
+    else
+    {
+      int i = 0;
+      printf("\nLoading file into program...\nfile succesfully opened");
+      sleep(2);
+      clearScreen();
+      while (i < MAX_PLAYERS && fscanf(file, "%s", p[i].name) == 1) {
+        fscanf(file, "%d", &p[i].win);    // Read the match count
+        fscanf(file, "%d", &p[i].loss);    // Read the match count
+        fscanf(file, "%d", &p[i].draw);    // Read the match count
+        i++;
+        }// Move to the next pet
+    }
+    fclose(file); // Close the file
+    return 0;
+
+}
+
 /*
   * This function fills in the pets[] array with the saved data from the txt file containing all the pets information
   * @param pets[] - this the universal pet structure array
@@ -319,7 +437,7 @@ int loadBattlePetsFromFile(struct BattlePet pets[])
   printf("\ninitating file....\n");
   sleep(1); //allows previous messages to be seen before clear screen operations
   clearScreen();
-    FILE *file = fopen("../competdium.txt", "r"); //our file pointer variable carrying the address of our pet file, in read mode 
+    FILE *file = fopen("competdium.txt", "r"); //our file pointer variable carrying the address of our pet file, in read mode 
     if (file == NULL) 
     {  //file opening error handling
         printf("Error opening file.\n"); 
