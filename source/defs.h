@@ -43,16 +43,21 @@ typedef struct BattlePet{
 
 
 
+
 //funciton prototypes
 
+void displayPet(struct BattlePet d);
 int loadBattlePetsFromFile(struct BattlePet pets[]);
 int displayMainMenu();
 void View(struct BattlePet pets[]);
 void ComPetDiumDriver();
-void displayPet(struct BattlePet d[], int index);
+void fullInfo(struct BattlePet d[], int index);
 void clearScreen();
 int delete(struct BattlePet d[], int index);
 int save(struct BattlePet pets[]);
 int backupBattlePets(struct BattlePet pets[]);
-
+void edit(struct BattlePet d[], int index);
+void elementEdit(struct BattlePet d[], int index);
+void elementDisplay();
+int integerToElement(char* output, int input);
 #endif

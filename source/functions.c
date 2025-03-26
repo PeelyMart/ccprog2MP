@@ -1,20 +1,100 @@
 #include "defs.h"
 #include "utilities.c"
-#include <unistd.h> 
+#include <unistd.h>
 
-void displayPet(struct BattlePet d[], int index)
+/* Displays all the elements and their respective numerical equivalent
+ */
+void elementDisplay(){
+  printf("[0] Fire \n");
+  printf("[1] Water\n");
+  printf("[2] Grass\n");
+  printf("[3] Earth\n");
+  printf("[4] Air\n");
+  printf("[5] Electric\n");
+  printf("[6] Ice\n");
+  printf("[7] Metal\n");
+}
+
+
+/* This function displays pet information
+ * @param d[] is the battlepet to be displayed
+*/
+void displayPet(struct BattlePet d)
+{
+    printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf("Name:\t\t\t%-30s\n", d.name);
+    printf("Element:\t\t%-10s\n", d.element);
+    printf("Matches:\t\t%d\n", d.match_count);
+    printf("%s\n", d.description);
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+}
+
+void edit(struct BattlePet d[], int index){
+  int loop = 1;
+  int nChoice;
+  int saveState = 0;
+  while(loop){
+    clearScreen();
+    printf("\t\t\tEDIT MODE:");
+    displayPet(d[index]);
+    printf("What do you want to edit?: \n[0] - Go back \n[1] - Element \n[2] - Description\n [3] Name" );
+    scanf("%d", &nChoice);
+    switch(nChoice){
+      case 0: 
+        loop = 0;
+        break;
+      case 1:
+        elementEdit(d, index);
+        break;
+      case 2:
+        //descriptionEdit(d);
+        break;
+      case 3: 
+        //nameEdit();
+        
+      default:
+        
+    }
+ 
+  }
+}
+
+/*  
+ *  This function is in charge of the CompetDium section, it is incharge of initializing 
+ *  and loading data into the pet file and calling its view function
+ */
+void ComPetDiumDriver()
+{
+  int loadState;
+  struct BattlePet pets[MAX_PETS];
+  for(int i = 0; i < MAX_PETS; i++){
+    strcpy(pets[i].name, "EMPTY-SLOT");
+    strcpy(pets[i].element, "\0");
+  }
+  //initializing pet array
+  loadState = loadBattlePetsFromFile(pets); //loading pet array
+  if(loadState == 0){ //Makes sure it is loaded correctly first before opening view
+    View(pets);
+  }
+  else{
+    printf("Loading error");
+  }
+}
+
+/* 
+ * This function displays the full information of the pet 
+ * and offers more options to do with such pet 
+ * @param d[] is the array of all pets
+ * @param index is the specific index that is being viewed
+*/
+void fullInfo(struct BattlePet d[], int index)
 {
     int nChoice = 1;
     int loop = 1;
     int deleteState;
   while(loop){
-    printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf("Name:\t\t\t%-30s\n", d[index].name);
-    printf("Element:\t\t%-10s\n", d[index].element);
-    printf("Matches:\t\t%d\n", d[index].match_count);
-    printf("%s\n", d[index].description);
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf("Press: \n[0] - Go back \n[1] - Edit \n[2] - Delete\n" );
+    displayPet(d[index]);
+   printf("Press: \n[0] - Go back \n[1] - Edit \n[2] - Delete\n" );
     scanf("%d", &nChoice);
     if(nChoice >= 0 && nChoice <= 2){
       switch(nChoice){
@@ -26,7 +106,7 @@ void displayPet(struct BattlePet d[], int index)
           loop = 0;
           break;
         case 1:
-          //edit();
+          edit(d, index);
           break;
         case 2:
           deleteState = delete(d ,index);
@@ -72,7 +152,7 @@ void View(struct BattlePet pets[])
   
     printf("Page: %d", page);
     printf("\n");
-    printf("Enter 'n' for Next page, 'p' for Previous page, 'q' to Quit, 's' for info and edit options: ");
+    printf("Enter: \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [s] for info and edit options: ");
     scanf(" %c", &choice);  // Space before %c to clear buffer
         if (choice == 'n' && index + PAGE_SIZE < MAX_PETS) {
             index += PAGE_SIZE;  // Move to next page
@@ -92,7 +172,7 @@ void View(struct BattlePet pets[])
           printf("\nHere: ");
           scanf("%d", &nChoice);
           if(nChoice >=1 && nChoice <= 4){
-          displayPet(pets, index + (nChoice - 1));
+          fullInfo(pets, index + (nChoice - 1));
           loop = 0;
         }
           else {
@@ -106,28 +186,6 @@ void View(struct BattlePet pets[])
 
   }
 }
-/*  
- *  This function is in charge of the CompetDium section, it is incharge of initializing 
- *  and loading data into the pet file and calling its view function
- */
-void ComPetDiumDriver()
-{
-  int loadState;
-  struct BattlePet pets[MAX_PETS];
-  for(int i = 0; i < MAX_PETS; i++){
-    strcpy(pets[i].name, "EMPTY-SLOT");
-    strcpy(pets[i].element, "\0");
-  }
-  //initializing pet array
-  loadState = loadBattlePetsFromFile(pets); //loading pet array
-  if(loadState == 0){ //Makes sure it is loaded correctly first before opening view
-    View(pets);
-  }
-  else{
-    printf("Loading error");
-  }
-}
-
 
 
 /* 
@@ -163,36 +221,4 @@ int displayMainMenu()
 }
 
 
-/*
-  * This function fills in the pets[] array with the saved data from the txt file containing all the pets information
-  * @param pets[] - this the universal pet structure array
-  * @return - No return value, but fills in the pet[] array using pointers and pointer arithmetic
-  * @pre - it assumed that pets is initated with pet[maxarray], txt file is correctly formatted, txt file exists
-*/
-int loadBattlePetsFromFile(struct BattlePet pets[]) 
-{
-  printf("\ninitating file....\n");
-  sleep(1); //allows previous messages to be seen before clear screen operations
-  clearScreen();
-    FILE *file = fopen("../competdium.txt", "r"); //our file pointer variable carrying the address of our pet file, in read mode 
-    if (file == NULL) 
-    {  //file opening error handling
-        printf("Error opening file.\n"); 
-        return 1;
-    }
-    else
-    {
-      int i = 0;
-      printf("\nLoading file into program...\nfile succesfully opened");
-      sleep(2);
-      clearScreen();
-      while (i < MAX_PETS && fscanf(file, "%s", pets[i].name) == 1) {
-        fscanf(file, " %s", pets[i].element);  // Space skips any leading whitespace/newlines
-        fscanf(file, " %[^\n]", pets[i].description);  // This will read everything up to a newline
-        fscanf(file, "%d", &pets[i].match_count);    // Read the match count
-        i++;
-        }// Move to the next pet
-    }
-    fclose(file); // Close the file
-    return 0;
-}
+
