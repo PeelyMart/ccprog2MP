@@ -1,0 +1,22 @@
+Player One: DaBaby
+Player Two: NonChalant
+
+P1 Roster vs P2 roster
+[0][0] Solaraffe vs Hydrake
+[0][1] Firepupp vs Meowguro
+[0][2] Hydrake vs Grawl
+
+[1][0] Meowguro vs Terrashark
+[1][1] Grawl vs Roarland
+[1][2] Barkbear vs Airsting
+
+[2][0] Terrashark vs Zephyram
+[2][1] Roarland vs Zaparat
+[2][2] Airsting vs Joltaroo
+
+MATCH RESULTS:
+2 2 2 
+3 1 2 
+1 2 1 
+Winner: NonChalant
+Win Type: Lucky Win

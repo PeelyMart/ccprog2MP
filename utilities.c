@@ -2,14 +2,288 @@
 #include <unistd.h>
 #include <string.h>
 
+/* Saves the current match count, used for tracking the names of the results
+ * @param matchCount is the updated match count
+*/
+void saveMatchCount(int matchCount){
+  FILE *fPtr = fopen("matchTracker.txt", "w");
+  fprintf(fPtr, "%d", matchCount);
+  fclose(fPtr);
+}
+
+void saveMatchResults(int matchCount, struct PlayerInfo p[], struct BattlePet d[], int rosterOne[], int rosterTwo[],  int oneindex, int twoindex, int board[3][3], int winner, int type) 
+{
+  int count = 0;
+  char filename[50]; 
+  sprintf(filename, "results/match_%d.txt", matchCount); 
+
+  FILE *file = fopen(filename, "w");
+  if (file == NULL) {
+      perror("Error opening file");
+      return;
+  }
+  //---------- Start of printing------// 
+  fprintf(file, "Player One: %s\nPlayer Two: %s\n", p[oneindex].name, p[twoindex].name);
+  fprintf(file, "\nP1 Roster vs P2 roster\n");
+  for(int x = 0; x < 3; x++){
+    for(int y = 0; y < 3; y++){
+      fprintf(file,"[%d][%d] %s vs %s\n", x, y, d[rosterOne[count]].name, d[rosterTwo[count]].name);
+      count++;
+    }
+  fprintf(file, "\n");
+  }
+
+  fprintf(file, "MATCH RESULTS:\n");
+  for (int x = 0; x < 3; x++) {
+      for (int y = 0; y < 3; y++) {
+          fprintf(file, "%d ", board[x][y]);
+      }
+      fprintf(file, "\n");
+  }
+
+  if (winner != 0) {
+      fprintf(file, "Winner: %s\n", winner == 1 ? p[oneindex].name : p[twoindex].name);
+      fprintf(file, "Win Type: %s\n", type == 1 ? "Lucky Win" : "Majority Win");
+  } else {
+      fprintf(file, "DRAW\n");
+  }
+
+  fclose(file);
+}
 
 
+/* This function is a supplementary function to loadRoster(), takes the names of the battlepet 
+ * and gives back the index of it in relation to the p[] array
+ * @param *name is the name of the pet to be evaluated
+ * @param *p is the set of all battle pets
+ * @return the index of the pet
+ * 
+ */
+int loadRosterHelper(char name[], struct BattlePet p[]){
+  for(int i = 0; i <  getLastPet(p)  ; i++){
+    if(strcmp(name, p[i].name) == 0){
+        return i;
+    }
+  }
+  printf("could not be found");
+  sleep(1);
+  fflush(stdout);
+  return -1;
+}
+/* Converts a set of pet names (char[]) into their indexes in the pet array
+ * reads the file  and extracts their names
+ * @pre the pet is a pet in the array 
+ * @param *name is the name of the user, it tells us where to find the file 
+ * @param *roster where the set of indexes will be saved
+ * @param *p set of all pets
+*/
+int loadRoster(char name[], int roster[], struct BattlePet p[]){
+  char filename[50];
+  char rosterNames[9][20];
+  strcpy(filename, "saved_roster/");
+  strcat(filename, name);
+  strcat(filename, ".txt");
+  FILE *fPtr;
+  fPtr = fopen(filename, "r");
+  if(fPtr == NULL){
+    printf("Could not be found");
+    return 0;
+  }
+  else{
+    for(int i = 0; i < 9; i++) 
+    {
+      fscanf(fPtr, "%s", rosterNames[i]);
+    }
+  fclose(fPtr);
+  }
+  for(int x  = 0; x < 9; x++){
+    roster[x] = loadRosterHelper(rosterNames[x], p);
+  }
+  return 1;
+}
+
+/* Prints the players pre picked save roster into the txt file
+ * @param *roster is the set of battlepets
+ * @param *name is the user name of the player
+ * @param *pets is the set of all pets
+ * 
+*/
+void saveRoster(int roster[], char name[], struct BattlePet pets[]){
+    char filename[60]; //able to handle .txt
+    strcpy(filename, "saved_roster/");
+    strcat(filename, name);
+    strcat(filename, ".txt");
+    FILE *fPtr;
+    printf("saved under %s", filename);
+    fPtr = fopen(filename, "w");
+    if(fPtr == NULL){
+      printf("Unable to make space");
+    }
+    else{
+      for(int i = 0; i < 9; i++){
+        fprintf(fPtr, "%s\n", pets[roster[i]].name);
+      }
+      fclose(fPtr);
+    }
+    fflush(stdout);
+    sleep(1);
+}
+/* This function checks a lucky win
+ * @param board is the populated board filled with results already
+ * @param player is being the player being checked
+ * @return 1 if the pattern was seen
+*/
+int luckyWin(int board[][3], int player){
+  for(int i = 0; i < 3; i++){
+    if(board[i][0] == player && board[i][1] == player &&  board[i][2] == player){
+      return 1;
+    }
+    if(board[0][i] == player && board[1][i] == player &&  board[2][i] == player){
+      return 1;
+    }
+  }
+  if(board[0][0] == player && board[1][1] == player && board[2][2] == player){
+      return 1;
+    }
+  if(board[0][2] == player && board[1][1] == player && board[2][0] == player){
+      return 1;
+    }
+  return 0;
+
+}
+/* This function checks who wins, or if it is a draw 
+ * @param board is the populated board with results
+ * @param *type is a pointer, it retrns what type 1 - lucky win, type 2 - majority win
+ * @return gives the player who won 1 = p1, 2 = p2, 0 = draw
+*/
+int winCheck(int board[][3], int *type)
+{
+  int luckyOne = luckyWin(board, 1); 
+  int winOne = 0;
+  int luckyTwo = luckyWin(board, 2);
+  int winTwo = 0; 
+  if(luckyOne != luckyTwo){
+    if(luckyOne == 1){
+      *type = 1;
+      return 1;
+    }
+    if(luckyTwo == 1){
+      *type =1;
+      return 2;
+    }
+  }
+  else if(luckyOne == luckyTwo){ //if both have a lucky win or if both dont
+    for(int i = 0; i < 3; i++){
+      for(int j = 0; j < 3; j++){
+        if(board[i][j] == 1){
+          winOne++;
+        }
+        if(board[i][j] == 2){
+          winTwo++;
+        }
+      }
+    }
+    if(winOne > winTwo){
+      *type = 2; //type 2 win - majority win
+      return 1;
+    }
+    if(winOne < winTwo){
+      *type = 2; 
+      return 2;
+    } 
+  }
+  else {
+    *type = 0; //draw type
+    return 0; //draw
+
+  }
+  return 0;
+}
+
+/* This function populates the board
+ * @param board 3x3 array of the matchup of the results
+ * @param x  player one's element indexes
+ * @param y player two's element indexes
+*/
+void boardLogic(int board[][3], int x[], int y[])
+{
+  int count = 0;
+  for(int i = 0; i < 3; i++){
+    for(int j = 0; j < 3; j++){
+      board[i][j] = ElementalAffinity(x[count], y[count]);
+      count ++;
+    }
+
+  }
+}
+
+
+/* Takes in the element and assigns it the elemental index equivalent
+ * @param *element the string of the element to be assigned
+ * @return integer equivalent of element
+*/
+int elementToInteger(char element[])
+{
+
+  if(strcmp(element, "Fire") == 0){
+    return 0;
+  }
+  else if(strcmp(element, "Water") == 0){
+    return 1;
+  }
+  else if(strcmp(element, "Grass") == 0){
+    return 2;
+  }
+  else if(strcmp(element, "Earth") == 0){
+    return 3;
+  }
+  else if(strcmp(element, "Air") == 0){
+    return 4;
+  }
+  else if(strcmp(element, "Electric") == 0){
+    return 5;
+  }
+  else if(strcmp(element, "Ice") == 0){
+    return 6;
+  }
+  else if(strcmp(element, "Metal") == 0){
+    return 7;
+  }
+  else{
+    return 8;
+  }
+
+}
+
+
+/* Contains the results of all elemental matchups
+ * @note 1 - player one win 2- player two win 3-draw
+ * @param x is the elemental index of player one
+ * @param y is the elemental index of player two
+ * @return is the result integer 
+*/
+int ElementalAffinity(int x, int y)
+{
+  int matrix[8][8] = {
+    {3, 2, 1, 1, 3, 3, 1, 2},
+    {1, 3, 2, 3, 3, 1, 2, 1},
+    {2, 1, 3, 1, 2, 1, 2, 3},
+    {2, 3 ,2, 3, 1, 2, 3, 1},
+    {3, 3, 1 ,2, 3, 1, 2, 2},
+    {3, 2, 2, 1, 2, 3, 2, 1},
+    {2, 1, 1, 3, 1, 1, 3, 2},
+    {1, 2, 3, 2, 1, 2, 1, 3}
+  };
+
+  return matrix[x][y];
+}
 /* Checks the roster indexes if it is alredy picked
  * @param n - the array to be checked against
  * @return 1 if it is already picked
  * @return 0 if it is not picked
  */
-int rosterSelectChecker(int n[], int key){
+int rosterSelectChecker(int n[], int key)
+{
   for(int i = 0; i < 9; i++){
     if(key == n[i]){
       return 1;
@@ -18,13 +292,12 @@ int rosterSelectChecker(int n[], int key){
   return 0;
 }
 
-
 /* This is the roster selection screen where you can pick your roster
  * @param d is the array of all the pets in the competdium
  * @param r is the roster array of each player
  */
-
-void rosterSelect(struct BattlePet d[], int roster[]){
+void rosterSelect(struct BattlePet d[], int roster[])
+{
   int alreadyPicked[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1}; //stores the index of "already picked pets"
   int petChoice;
   int exitCondition = 1;
@@ -44,7 +317,7 @@ void rosterSelect(struct BattlePet d[], int roster[]){
     printf("Page: %d \t", page);
     printf("Count:%d", count );
     printf("\n");
-    printf("Enter: \n [a] - add pet \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [s] for info and edit options: ");
+    printf("Enter: \n [a] - add pet \n [n] - Next page \n [p] - Previous page\n [q] to Quit \n [c] to confirm once count is at 9");
     scanf(" %c", &choice);  // Space before %c to clear buffer
         if (choice == 'n' && index + PAGE_SIZE < MAX_PETS) {
             index += PAGE_SIZE;  // Move to next page
@@ -83,13 +356,19 @@ void rosterSelect(struct BattlePet d[], int roster[]){
           }
         }
         else if(choice == 'c'){
-          for(int i = 0; i < 9; i++){
-            printf("%s\n", d[roster[i]].name);
+          if(count < 9){
+            printf("You cannot confirm yet you need to fill up 9 pets\n");
             fflush(stdout);
           }
-          sleep(5);
-          exitCondition = 0;
-          }
+          else{
+              for(int i = 0; i < 9; i++){
+                printf("%s\n", d[roster[i]].name);
+                fflush(stdout);
+              }
+              sleep(5);
+              exitCondition = 0;
+            }
+        }
           
 
   }
@@ -98,7 +377,9 @@ void rosterSelect(struct BattlePet d[], int roster[]){
 
 
 
-
+/*This function opens the players file and saves it to the array
+ * @param p is the array of players to save it to
+*/
 int savePlayer(struct PlayerInfo p[])
 {
   int j = getLastPlayer(p);
@@ -118,18 +399,18 @@ int savePlayer(struct PlayerInfo p[])
     printf("Back up completed");
     return 0;
   }
+  fflush(stdout);
   fclose(file);
 }
 
 
-/*
- *
+/* This function adds a pet to the BattlePet array  
+ * @param d is the array of pets 
 */
 void addPet(struct BattlePet d[])
 {
   int index = getLastPet(d);
   int loop = 1; 
-  int nChoice;
   char inputBuffer[500]; //buffer makes sure that we can check it before officially copying it over to the array.
   BattlePetName nameBuffer;
   BPDescription descriptionBuffer;
@@ -175,8 +456,8 @@ void addPet(struct BattlePet d[])
  * @param *d contains all the players in the game
  * @returns the last index of the player 
 */
-
-int getLastPlayer(struct PlayerInfo d[]){
+int getLastPlayer(struct PlayerInfo d[])
+{
   int j = 0;
   while(strcmp(d[j].name, "EMPTY-SLOT") != 0){
     if(j == 50){
@@ -192,7 +473,8 @@ int getLastPlayer(struct PlayerInfo d[]){
  * @param *d contains all the pets in the game
  * @returns the last index of the pet
 */
-int getLastPet(struct BattlePet d[]){
+int getLastPet(struct BattlePet d[])
+{
   int j = 0;
   while(strcmp(d[j].name, "EMPTY-SLOT") != 0){
     if(j == 60){
@@ -208,10 +490,10 @@ int getLastPet(struct BattlePet d[]){
  * @param *d this contains all the pets in the game
  * @param index this specifies what pet in the array
 */
-void nameEdit(struct BattlePet d[], int index){
+void nameEdit(struct BattlePet d[], int index)
+{
   displayPet(d[index]);
   int loop1 = 1; 
-  int nChoice;
   char inputBuffer[500]; //buffer makes sure that we can check it before officially copying it over to the array.
   while(loop1){
   printf("This is your current name: \n%s\n", d[index].name);
@@ -238,11 +520,10 @@ void nameEdit(struct BattlePet d[], int index){
  * @param *d this contains all the pets in the game
  * @param index this specifies what pet in the array
 */
-void descriptionEdit(struct BattlePet d[], int index){
+void descriptionEdit(struct BattlePet d[], int index)
+{
   displayPet(d[index]);
-  int loop1 = 1;
-  int loop2 = 1; 
-  int nChoice;
+  int loop1 = 1; 
   char inputBuffer[500]; //buffer makes sure that we can check it before officially copying it over to the array.
   while(loop1){
   printf("This is your current description: \n%s\n", d[index].description);
@@ -320,7 +601,8 @@ int integerToElement(char* output, int input)
  * @param index is the specific index of the pet that you want to change it to
  * @pre the pet is in the array, and the index is less that 50SS
  */
-void elementEdit(struct BattlePet d[], int index){
+void elementEdit(struct BattlePet d[], int index)
+{
   int loop = 1;
   int elementChange;
   displayPet(d[index]);
@@ -344,7 +626,8 @@ void elementEdit(struct BattlePet d[], int index){
 
 /*Prints an ASCII value that clears the screen
  */
-void  clearScreen(){
+void  clearScreen()
+{
   printf("\033[H\033[J"); //ascii escape sequence that clears the screen
 }
 
@@ -375,6 +658,7 @@ int savePet(struct BattlePet pets[])
     printf("Back up completed");
     return 0;
   }
+  fflush(stdout);
   fclose(file);
 }
 
@@ -444,7 +728,8 @@ int delete(struct BattlePet d[], int index)
   }
 }
 
-int loadPlayerFromFile(struct PlayerInfo p[]){
+int loadPlayerFromFile(struct PlayerInfo p[])
+{
    printf("\ninitating file....\n");
   sleep(1); //allows previous messages to be seen before clear screen operations
   clearScreen();

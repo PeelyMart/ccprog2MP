@@ -33,7 +33,6 @@ typedef struct PlayerInfo
 } Player;
 
 //Battle Pet structure
-
 typedef struct BattlePet{
   BattlePetName name;
   char element[15];
@@ -47,9 +46,9 @@ typedef struct BattlePet{
 //funciton prototypes
 void displayPet(struct BattlePet d);
 int loadBattlePetsFromFile(struct BattlePet pets[]);
-int displayMainMenu();
+int displayMainMenu(void);
 void View(struct BattlePet pets[]);
-void ComPetDiumDriver();
+void ComPetDiumDriver(void);
 void fullInfo(struct BattlePet d[], int index);
 void clearScreen(void);
 int delete(struct BattlePet d[], int index);
@@ -57,13 +56,13 @@ int savePet(struct BattlePet pets[]);
 int backupBattlePets(struct BattlePet pets[]);
 void edit(struct BattlePet d[], int index);
 void elementEdit(struct BattlePet d[], int index);
-void elementDisplay();
+void elementDisplay(void);
 int integerToElement(char* output, int input);
 void descriptionEdit(struct BattlePet d[], int index);
 void nameEdit(struct BattlePet d[], int index);
 void addPet(struct BattlePet d[]);
 int getLastPet(struct BattlePet d[]);
-void battleDriver();
+void battleDriver(void);
 void battleMain(struct BattlePet d[], struct PlayerInfo p[]);
 int loadPlayerFromFile(struct PlayerInfo p[]);
 struct PlayerInfo playerView(struct PlayerInfo p[], int* saveindex, int compare);
@@ -71,4 +70,17 @@ int getLastPlayer(struct PlayerInfo d[]);
 int savePlayer(struct PlayerInfo p[]);
 void rosterSelect(struct BattlePet d[], int roster[]);
 int rosterSelectChecker(int n[], int key);
+int elementToInteger(char element[]);
+int ElementalAffinity(int x, int y);
+void boardLogic(int board[][3], int x[], int y[]);
+void printBoard(int board[][3]);
+int luckyWin(int board[][3], int player);
+int readMatchCount(void);
+int rosterCreation(struct PlayerInfo players[]);
+void rosterScreen(struct BattlePet d[], int roster[], int player, char name[]);
+int loadRoster(char name[], int roster[], struct BattlePet p[]);
+int loadRosterHelper(char name[], struct BattlePet d[]);
+void saveRoster(int roster[], char name[], struct BattlePet pets[]);
+int winCheck(int board[][3], int *type);
+void saveMatchCount(int matchCount);
 #endif

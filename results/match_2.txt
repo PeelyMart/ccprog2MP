@@ -1,0 +1,21 @@
+Player One: 1
+Player Two: EMPTY-SLOT
+
+P1 Roster vs P2 roster
+[0][0]  vs 
+[0][1]  vs 
+[0][2]  vs 
+
+[1][0]  vs 
+[1][1]  vs 
+[1][2]  vs 
+
+[2][0]  vs 
+[2][1]  vs 
+[2][2]  vs 
+
+MATCH RESULTS:
+72383192 72383192 72383192 
+72383192 72383192 72383192 
+72383192 72383192 72383192 
+DRAW

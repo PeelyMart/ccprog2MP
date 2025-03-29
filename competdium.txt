@@ -77,3 +77,4 @@ Rustcoon
 Metal
 A clever raccoon with metallic fur that can withstand rust and corrosion, scavenging through abandoned factories.
 0
+
